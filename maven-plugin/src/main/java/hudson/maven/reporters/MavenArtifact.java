@@ -30,8 +30,6 @@ import hudson.maven.MavenBuildProxy;
 import hudson.model.Api;
 import hudson.model.BuildListener;
 import hudson.model.FingerprintMap;
-import hudson.model.Run;
-import hudson.util.LRUStringConverter;
 import jenkins.model.Jenkins;
 
 import hudson.util.HttpResponses;
@@ -70,11 +68,6 @@ import java.util.logging.Logger;
  */
 @ExportedBean
 public final class MavenArtifact implements Serializable {
-
-    static {
-        Run.XSTREAM.registerLocalConverter(MavenArtifact.class, "md5sum", new LRUStringConverter(5000));
-    }
-
     /**
      * Basic parameters of a Maven artifact.
      */

@@ -51,7 +51,7 @@ public class PosixAPI {
         }
 
         public boolean isVerbose() {
-            return true;
+            return false;
         }
 
         public File getCurrentWorkingDirectory() {

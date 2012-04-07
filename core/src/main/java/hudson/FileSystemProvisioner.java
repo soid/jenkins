@@ -23,7 +23,6 @@
  */
 package hudson;
 
-import hudson.FilePath.TarCompression;
 import hudson.matrix.MatrixBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -31,8 +30,6 @@ import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
-import hudson.util.DirScanner.Glob;
-import hudson.util.io.ArchiverFactory;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.RunListener;
 import hudson.scm.SCM;
@@ -169,7 +166,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
      *
      * @param ws
      *      New workspace should be prepared in this location. This is the same value as
-     *      {@code build.getWorkspace()} but passed separately for convenience.
+     *      {@code build.getProject().getWorkspace()} but passed separately for convenience.
      * @param glob
      *      Ant-style file glob for files to include in the snapshot. May not be pertinent for all
      *      implementations.
@@ -214,10 +211,10 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
          * Creates a tar ball.
          */
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
-            File wss = new File(build.getRootDir(),"workspace.tgz");
+            File wss = new File(build.getRootDir(),"workspace.zip");
             OutputStream os = new BufferedOutputStream(new FileOutputStream(wss));
             try {
-                ws.archive(ArchiverFactory.TARGZ,os,glob);
+                ws.zip(os,glob);
             } finally {
                 os.close();
             }
@@ -226,13 +223,8 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
 
         public static final class WorkspaceSnapshotImpl extends WorkspaceSnapshot {
             public void restoreTo(AbstractBuild<?,?> owner, FilePath dst, TaskListener listener) throws IOException, InterruptedException {
-                File zip = new File(owner.getRootDir(),"workspace.zip");
-                if (zip.exists()) {// we used to keep it in zip
-                    new FilePath(zip).unzip(dst);
-                } else {// but since 1.456 we do tgz
-                    File tgz = new File(owner.getRootDir(),"workspace.tgz");
-                    new FilePath(tgz).untar(dst, TarCompression.GZIP);
-                }
+                File wss = new File(owner.getRootDir(),"workspace.zip");
+                new FilePath(wss).unzip(dst);
             }
         }
 

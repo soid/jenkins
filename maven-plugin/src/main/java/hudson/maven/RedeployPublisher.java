@@ -29,7 +29,8 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.reporters.MavenAbstractArtifactRecord;
 import hudson.maven.reporters.MavenArtifactRecord;
-import hudson.maven.settings.SettingConfig;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
+import hudson.maven.settings.MavenSettingsProvider;
 import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -53,9 +54,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -69,8 +67,12 @@ import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.cli.BatchModeMavenTransferListener;
 import org.apache.maven.repository.Proxy;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 /**
  * {@link Publisher} for {@link MavenModuleSetBuild} to deploy artifacts
@@ -90,48 +92,30 @@ public class RedeployPublisher extends Recorder {
     public final String url;
     public final boolean uniqueVersion;
     public final boolean evenIfUnstable;
-    public final String releaseEnvVar;
 
     /**
      * For backward compatibility
      */
     @Deprecated
     public RedeployPublisher(String id, String url, boolean uniqueVersion) {
-    	this(id, url, uniqueVersion, false, null);
+    	this(id, url, uniqueVersion, false);
     }
     
     /**
      * @since 1.347
      */
-    @Deprecated
-    public RedeployPublisher(String id, String url, boolean uniqueVersion, boolean evenIfUnstable) {
-        this(id, url, uniqueVersion, evenIfUnstable, null);
-    }
-    
     @DataBoundConstructor
-    public RedeployPublisher(String id, String url, boolean uniqueVersion, boolean evenIfUnstable, String releaseEnvVar) {
+    public RedeployPublisher(String id, String url, boolean uniqueVersion, boolean evenIfUnstable) {
         this.id = id;
         this.url = Util.fixEmptyAndTrim(url);
         this.uniqueVersion = uniqueVersion;
         this.evenIfUnstable = evenIfUnstable;
-        this.releaseEnvVar = Util.fixEmptyAndTrim(releaseEnvVar);
     }
 
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (build.getResult().isWorseThan(getTreshold()))
             return true;    // build failed. Don't publish
 
-        /**
-         * Check if we should skip or not
-         */
-        if (releaseEnvVar != null) {
-        	String envVarValue = build.getEnvironment(listener).get(releaseEnvVar);
-        	if ("true".equals(envVarValue)) { // null or false are ignored
-        		listener.getLogger().println("[INFO] Skipping deploying artifact as release build is in progress.");
-        		return true; // skip the deploy
-        	}
-        }
-        
         List<MavenAbstractArtifactRecord> mavenAbstractArtifactRecords = getActions(build, listener);
         if (mavenAbstractArtifactRecords == null || mavenAbstractArtifactRecords.isEmpty()) {
             listener.getLogger().println("[ERROR] No artifacts are recorded. Is this a Maven project?");
@@ -231,7 +215,8 @@ public class RedeployPublisher extends Recorder {
                 String altSettingsPath = null;
 
                 if (!StringUtils.isBlank(settingsConfigId)) {
-                    SettingConfig config = SettingsProviderUtils.findSettings(settingsConfigId);
+                    Config config = SettingsProviderUtils.findConfig( settingsConfigId,
+                                                                      MavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.MavenSettingsProvider.class );
                     if (config == null) {
                         listener.getLogger().println(
                             " your Apache Maven build is setup to use a config with id " + settingsConfigId
@@ -251,7 +236,7 @@ public class RedeployPublisher extends Recorder {
 
                 String globalSettingsConfigId = mavenModuleSet.getGlobalSettingConfigId();
                 if (!StringUtils.isBlank(globalSettingsConfigId)) {
-                    SettingConfig config = SettingsProviderUtils.findSettings(globalSettingsConfigId);
+                    Config config = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.GlobalMavenSettingsProvider.class );
                     if (config == null) {
                         listener.getLogger().println(
                             " your Apache Maven build is setup to use a global settings config with id "

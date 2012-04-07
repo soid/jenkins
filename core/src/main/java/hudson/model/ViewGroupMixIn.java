@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -109,12 +108,7 @@ public abstract class ViewGroupMixIn {
      */
     @Exported
     public Collection<View> getViews() {
-        List<View> orig = views();
-        List<View> copy = new ArrayList<View>(orig.size());
-        for (View v : orig) {
-            if (v.hasPermission(View.READ))
-                copy.add(v);
-        }
+        List<View> copy = new ArrayList<View>(views());
         Collections.sort(copy, View.SORTER);
         return copy;
     }

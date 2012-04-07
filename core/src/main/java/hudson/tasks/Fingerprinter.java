@@ -34,6 +34,7 @@ import hudson.matrix.MatrixConfiguration;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
@@ -64,6 +65,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -292,7 +294,6 @@ public class Fingerprinter extends Recorder implements Serializable, DependecyDe
      * Action for displaying fingerprints.
      */
     public static final class FingerprintAction implements RunAction {
-        
         private final AbstractBuild build;
 
         /**

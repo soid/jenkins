@@ -172,8 +172,7 @@ public class RobustReflectionConverter implements Converter {
     }
 
     protected void marshallField(final MarshallingContext context, Object newObj, Field field) {
-        Converter converter = mapper.getLocalConverter(field.getDeclaringClass(), field.getName());
-        context.convertAnother(newObj, converter);
+        context.convertAnother(newObj);
     }
 
     public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context) {
@@ -288,8 +287,7 @@ public class RobustReflectionConverter implements Converter {
     }
 
     protected Object unmarshalField(final UnmarshallingContext context, final Object result, Class type, Field field) {
-        Converter converter = mapper.getLocalConverter(field.getDeclaringClass(), field.getName());
-        return context.convertAnother(result, type, converter);
+        return context.convertAnother(result, type);
     }
 
     private Map writeValueToImplicitCollection(UnmarshallingContext context, Object value, Map implicitCollections, Object result, String itemFieldName) {

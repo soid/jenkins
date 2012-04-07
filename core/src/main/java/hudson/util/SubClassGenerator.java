@@ -25,13 +25,13 @@ package hudson.util;
 
 import hudson.PluginManager.UberClassLoader;
 import jenkins.model.Jenkins;
-import org.kohsuke.asm3.ClassWriter;
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
 
-import static org.kohsuke.asm3.Opcodes.*;
+import static org.objectweb.asm.Opcodes.*;
 
 /**
  * Generates a new class that just defines constructors into the super types.
@@ -44,7 +44,7 @@ public class SubClassGenerator extends ClassLoader {
     }
 
     public <T> Class<? extends T> generate(Class<T> base, String name) {
-        ClassWriter cw = new ClassWriter(0);//?
+        ClassWriter cw = new ClassWriter(false,false);//?
         cw.visit(49, ACC_PUBLIC, name.replace('.', '/'), null,
                 Type.getInternalName(base),null);
 

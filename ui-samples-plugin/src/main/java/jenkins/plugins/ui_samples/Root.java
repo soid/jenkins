@@ -2,9 +2,6 @@ package jenkins.plugins.ui_samples;
 
 import hudson.Extension;
 import hudson.model.RootAction;
-import jenkins.model.ModelObjectWithContextMenu;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 import java.util.List;
 
@@ -14,7 +11,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class Root implements RootAction, ModelObjectWithContextMenu {
+public class Root implements RootAction {
     public String getIconFileName() {
         return "gear.png";
     }
@@ -36,9 +33,5 @@ public class Root implements RootAction, ModelObjectWithContextMenu {
 
     public List<UISample> getAll() {
         return UISample.all();
-    }
-
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        return new ContextMenu().addAll(getAll());
     }
 }

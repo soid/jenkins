@@ -25,6 +25,7 @@ package hudson.os.windows;
 
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.lifecycle.WindowsSlaveInstaller;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.os.windows.ManagedWindowsServiceLauncher.AccountInfo;

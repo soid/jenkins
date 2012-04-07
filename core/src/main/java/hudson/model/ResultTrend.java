@@ -96,7 +96,7 @@ public enum ResultTrend {
     /**
      * Returns the result trend of a build.
      * 
-     * @param build the build
+     * @param build the current build
      * @return the result trend
      */
     public static ResultTrend getResultTrend(AbstractBuild<?, ?> build) {
@@ -106,7 +106,7 @@ public enum ResultTrend {
     /**
      * Returns the result trend of a run.
      * 
-     * @param run the run
+     * @param run the current run
      * @return the result trend
      * 
      * @since 1.441

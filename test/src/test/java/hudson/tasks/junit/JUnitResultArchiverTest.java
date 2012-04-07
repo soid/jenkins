@@ -102,14 +102,14 @@ public class JUnitResultArchiverTest extends HudsonTestCase {
 	public void testPersistence() throws Exception {
         project.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
 		
-		reloadJenkins();
+		reloadHudson();
 		
 		FreeStyleBuild build = project.getBuildByNumber(1);
 		
 		assertTestResults(build);
 	}
 
-	private void reloadJenkins() throws Exception {
+	private void reloadHudson() throws Exception {
         hudson.reload();
 		project = (FreeStyleProject) hudson.getItem("junit");
 	}

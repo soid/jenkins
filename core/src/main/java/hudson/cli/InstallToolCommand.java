@@ -123,7 +123,14 @@ public class InstallToolCommand extends CLICommand {
 
         Node node = exec.getOwner().getNode();
 
-        t = t.translate(node, EnvVars.getRemote(checkChannel()), new StreamTaskListener(stderr));
+        if (t instanceof NodeSpecific) {
+            NodeSpecific n = (NodeSpecific) t;
+            t = (ToolInstallation)n.forNode(node,new StreamTaskListener(stderr));
+        }
+        if (t instanceof EnvironmentSpecific) {
+            EnvironmentSpecific e = (EnvironmentSpecific) t;
+            t = (ToolInstallation)e.forEnvironment(EnvVars.getRemote(checkChannel()));
+        }
         stdout.println(t.getHome());
         return 0;
     }

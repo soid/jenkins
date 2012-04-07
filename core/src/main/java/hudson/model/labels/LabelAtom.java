@@ -45,7 +45,6 @@ import hudson.util.XStream2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -200,11 +199,11 @@ public class LabelAtom extends Label implements Saveable {
     /**
      * Accepts the update to the node configuration.
      */
-    @RequirePOST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         final Jenkins app = Jenkins.getInstance();
 
         app.checkPermission(Jenkins.ADMINISTER);
+        requirePOST();
 
         properties.rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
         updateTransientActions();

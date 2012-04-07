@@ -28,13 +28,13 @@ import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
 import hudson.model.AbstractModelObject;
-import hudson.model.AdministrativeMonitor;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.CyclicGraphDetector;
 import hudson.util.CyclicGraphDetector.CycleDetectedException;
+import hudson.util.FormValidation;
 import hudson.util.IOException2;
 import hudson.util.PersistedList;
 import hudson.util.Service;
@@ -196,7 +196,7 @@ public abstract class PluginManager extends AbstractModelObject {
                                             PluginWrapper p = strategy.createPluginWrapper(arc);
                                             if (isDuplicate(p)) return;
 
-                                            p.isBundled = containsHpiJpi(bundledPlugins, arc.getName());
+                                            p.isBundled = bundledPlugins.contains(arc.getName());
                                             plugins.add(p);
                                         } catch (IOException e) {
                                             failedPlugins.add(new FailedPlugin(arc.getName(),e));
@@ -243,18 +243,6 @@ public abstract class PluginManager extends AbstractModelObject {
                                                         r.add(p);
                                                 }
                                             }
-                                            
-                                            @Override
-                                            protected void reactOnCycle(PluginWrapper q, List<PluginWrapper> cycle)
-                                                    throws hudson.util.CyclicGraphDetector.CycleDetectedException {
-                                                
-                                                LOGGER.log(Level.SEVERE, "found cycle in plugin dependencies: (root="+q+", deactivating all involved) "+Util.join(cycle," -> "));
-                                                for (PluginWrapper pluginWrapper : cycle) {
-                                                    pluginWrapper.setHasCycleDependency(true);
-                                                    failedPlugins.add(new FailedPlugin(pluginWrapper.getShortName(), new CycleDetectedException(cycle)));
-                                                }
-                                            }
-                                            
                                         };
                                         cgd.run(getPlugins());
 
@@ -344,15 +332,6 @@ public abstract class PluginManager extends AbstractModelObject {
         }});
     }
 
-    /*
-     * contains operation that considers xxx.hpi and xxx.jpi as equal
-     * this is necessary since the bundled plugins are still called *.hpi 
-     */
-    private boolean containsHpiJpi(Collection<String> bundledPlugins, String name) {
-        return bundledPlugins.contains(name.replaceAll("\\.hpi",".jpi"))
-                || bundledPlugins.contains(name.replaceAll("\\.jpi",".hpi"));
-    }
-
     /**
      * TODO: revisit where/how to expose this. This is an experiment.
      */
@@ -423,9 +402,12 @@ public abstract class PluginManager extends AbstractModelObject {
         File file = new File(rootDir, fileName);
         File pinFile = new File(rootDir, fileName+".pinned");
 
-        // normalization first, if the old file exists.
-        rename(new File(rootDir,legacyName),file);
-        rename(new File(rootDir,legacyName+".pinned"),pinFile);
+        {// normalization first
+            File legacyFile = new File(rootDir,legacyName);
+            if (legacyFile.exists())    legacyFile.renameTo(file);
+            File legacyPinFile = new File(rootDir,legacyName+".pinned");
+            if (legacyPinFile.exists())    legacyPinFile.renameTo(pinFile);
+        }
         
         // update file if:
         //  - no file exists today
@@ -437,20 +419,6 @@ public abstract class PluginManager extends AbstractModelObject {
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
             // unpacking the plugin itself in ClassicPluginStrategy.explode
-        }
-    }
-
-    /**
-     * Rename a legacy file to a new name, with care to Windows where {@link File#renameTo(File)}
-     * doesn't work if the destination already exists.
-     */
-    private void rename(File legacyFile, File newFile) throws IOException {
-        if (!legacyFile.exists())   return;
-        if (newFile.exists()) {
-            Util.deleteFile(newFile);
-        }
-        if (!legacyFile.renameTo(newFile)) {
-            LOGGER.warning("Failed to rename " + legacyFile + " to " + newFile);
         }
     }
 
@@ -570,16 +538,12 @@ public abstract class PluginManager extends AbstractModelObject {
      * @since 1.402.
      */
     public PluginWrapper whichPlugin(Class c) {
-        PluginWrapper oneAndOnly = null;
         ClassLoader cl = c.getClassLoader();
         for (PluginWrapper p : activePlugins) {
-            if (p.classLoader==cl) {
-                if (oneAndOnly!=null)
-                    return null;    // ambigious
-                oneAndOnly = p;
-            }
+            if (p.classLoader==cl)
+                return p;
         }
-        return oneAndOnly;
+        return null;
     }
 
     /**
@@ -841,33 +805,5 @@ public abstract class PluginManager extends AbstractModelObject {
      */
     /*package*/ static final class PluginInstanceStore {
         final Map<PluginWrapper,Plugin> store = new Hashtable<PluginWrapper,Plugin>();
-    }
-    
-    /**
-     * {@link AdministrativeMonitor} that checks if there are any plugins with cycle dependencies.
-     */
-    @Extension
-    public static final class PluginCycleDependenciesMonitor extends AdministrativeMonitor {
-        
-        private transient volatile boolean isActive = false;
-        
-        private transient volatile List<String> pluginsWithCycle; 
-        
-        public boolean isActivated() {
-            if(pluginsWithCycle == null){
-                pluginsWithCycle = new ArrayList<String>();
-                for (PluginWrapper p : Jenkins.getInstance().getPluginManager().getPlugins()) {
-                    if(p.hasCycleDependency()){
-                        pluginsWithCycle.add(p.getShortName());
-                        isActive = true;
-                    }
-                }
-            }
-            return isActive;
-        }
-
-        public List<String> getPluginsWithCycle() {
-            return pluginsWithCycle;
-        }
     }
 }

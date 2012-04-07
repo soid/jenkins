@@ -35,7 +35,6 @@ import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
 import hudson.util.IOUtils;
 import hudson.util.TextFile;
-import hudson.util.TimeUnit2;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONException;
@@ -109,12 +108,6 @@ public class UpdateSite {
     private transient volatile long lastAttempt = -1;
 
     /**
-     * If the attempt to fetch data fails, we progressively use longer time out before retrying,
-     * to avoid overloading the server.
-     */
-    private transient volatile long retryWindow;
-
-    /**
      * ID string for this update source.
      */
     private final String id;
@@ -169,7 +162,6 @@ public class UpdateSite {
         }
 
         LOGGER.info("Obtained the latest update center data file for UpdateSource " + id);
-        retryWindow = 0;
         getDataFile().write(json);
         return FormValidation.ok();
     }
@@ -286,14 +278,8 @@ public class UpdateSite {
         if(dataTimestamp==-1)
             dataTimestamp = getDataFile().file.lastModified();
         long now = System.currentTimeMillis();
-        
-        retryWindow = Math.max(retryWindow,SECONDS.toMillis(15));
-        
-        boolean due = now - dataTimestamp > DAY && now - lastAttempt > retryWindow;
-        if(due) {
-            lastAttempt = now;
-            retryWindow = Math.min(retryWindow*2, HOURS.toMillis(1)); // exponential back off but at most 1 hour
-        }
+        boolean due = now - dataTimestamp > DAY && now - lastAttempt > 15000;
+        if(due)     lastAttempt = now;
         return due;
     }
 

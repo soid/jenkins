@@ -16,7 +16,6 @@ war=`$defaults war` || war="/Applications/Jenkins/jenkins.war"
 
 javaArgs=""
 heapSize=`$defaults heapSize` && javaArgs="$javaArgs -Xmx${heapSize}"
-permGen=`$defaults permGen` && javaArgs="$javaArgs -XX:MaxPermSize=${permGen}"
 
 home=`$defaults JENKINS_HOME` && export JENKINS_HOME="$home"
 

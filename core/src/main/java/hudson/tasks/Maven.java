@@ -294,7 +294,8 @@ public class Maven extends Builder {
             // The other solution would be to set M2_HOME if we are calling Maven2
             // and MAVEN_HOME for Maven1 (only of use for strange people that
             // are calling Maven2 from Maven1)
-            mi.buildEnvVars(env);
+            env.put("M2_HOME",mi.getHome());
+            env.put("MAVEN_HOME",mi.getHome());
         }
         // just as a precaution
         // see http://maven.apache.org/continuum/faqs.html#how-does-continuum-detect-a-successful-build
@@ -398,14 +399,6 @@ public class Maven extends Builder {
 
         public File getHomeDir() {
             return new File(getHome());
-        }
-
-        @Override
-        public void buildEnvVars(EnvVars env) {
-            String home = getHome();
-            env.put("M2_HOME", home);
-            env.put("MAVEN_HOME", home);
-            env.put("PATH+MAVEN", home + "/bin");
         }
 
         /**

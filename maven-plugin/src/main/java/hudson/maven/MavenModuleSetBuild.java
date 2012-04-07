@@ -34,7 +34,8 @@ import hudson.maven.MavenBuild.ProxyImpl2;
 import hudson.maven.reporters.MavenAggregatedArtifactRecord;
 import hudson.maven.reporters.MavenFingerprinter;
 import hudson.maven.reporters.MavenMailer;
-import hudson.maven.settings.SettingConfig;
+import hudson.maven.settings.GlobalMavenSettingsProvider;
+import hudson.maven.settings.MavenSettingsProvider;
 import hudson.maven.settings.SettingsProviderUtils;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -91,6 +92,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.codehaus.plexus.util.PathTool;
+import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -169,7 +171,9 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
             Node node = computer.getNode();
             if (node != null) {
                 mvn = mvn.forNode(node, log);
-                mvn.buildEnvVars(envs);
+                
+                envs.put("M2_HOME", mvn.getHome());
+                envs.put("PATH+MAVEN", mvn.getHome() + "/bin");
             }
         }
         
@@ -620,7 +624,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         String settingsConfigId = project.getSettingConfigId();
                         if (StringUtils.isNotBlank(settingsConfigId)) {
-                            SettingConfig settingsConfig = SettingsProviderUtils.findSettings(settingsConfigId);
+                            Config settingsConfig = SettingsProviderUtils.findConfig( settingsConfigId, MavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.MavenSettingsProvider.class );
                             if (settingsConfig == null) {
                                 logger.println(" your Apache Maven build is setup to use a config with id " + settingsConfigId
                                                    + " but cannot find the config");
@@ -635,7 +639,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
                         String globalSettingsConfigId = project.getGlobalSettingConfigId();
                         if (StringUtils.isNotBlank(globalSettingsConfigId)) {
-                            SettingConfig settingsConfig = SettingsProviderUtils.findSettings(globalSettingsConfigId);
+                            Config settingsConfig = SettingsProviderUtils.findConfig( globalSettingsConfigId, GlobalMavenSettingsProvider.class, org.jenkinsci.lib.configprovider.maven.GlobalMavenSettingsProvider.class );
                             if (settingsConfig == null) {
                                 logger.println(" your Apache Maven build is setup to use a global settings config with id " + globalSettingsConfigId
                                                    + " but cannot find the config");

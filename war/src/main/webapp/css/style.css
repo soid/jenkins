@@ -79,9 +79,24 @@ dt {
   text-decoration: none;
 }
 
+#left-top-nav {
+  text-align: left;
+  border-left: 10px solid #fff;
+  padding: 4px;
+  color: #222;
+}
+
+#left-top-nav a, #right-top-nav a {
+  color: black;
+}
+
+#right-top-nav {
+  text-align: right;
+  padding: 4px;
+}
+
 #main-panel {
   padding: 10px;
-    padding-top: 0px;
 }
 
 #side-panel {
@@ -170,6 +185,10 @@ a.tip:hover span {
   text-align: left
 }
 
+#top-nav .a {
+  color: white;
+}
+
 img {
   vertical-align: middle;
   border: 0;
@@ -177,7 +196,7 @@ img {
 
 div.disabled {
     opacity : 0.4;
-    filter: alpha(opacity=40); /* msie */
+    filter: alpha(opacity=40); // msie
     background-color: #000;
 }
 
@@ -450,7 +469,7 @@ LABEL.attach-previous {
     margin-left: 0.5em;
 }
 
-.bottom-sticker, #bottom-sticker {
+#bottom-sticker {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
 }
 .bottom-sticker-inner {
@@ -463,9 +482,9 @@ LABEL.attach-previous {
     background-repeat: repeat-x;
 }
 
-.top-sticker, #top-sticker {
+#top-sticker {
     width:  100%;   /* it needs to occupy the entire width or else the underlying content will see through */
-    z-index: 999;
+    z-index: 1;
 }
 .top-sticker-inner {
     background:white;
@@ -476,14 +495,6 @@ LABEL.attach-previous {
     background-image: url("../images/top-sticker-bottom-edge.png");
     background-repeat: repeat-x;
 }
-.top-sticker.noedge > .top-sticker-edge {
-    display: none;
-}
-
-.top-sticker.noedge > .top-sticker-inner {
-    padding:0;
-}
-
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
@@ -521,7 +532,7 @@ LABEL.attach-previous {
     font-weight: bold;
     padding-left: 20px;
     min-height: 16px;
-    background-image: url( "../images/16x16/go-next.png" ); /* TODO: get a better icon */
+    background-image: url( "../images/16x16/go-next.gif" ); /* TODO: get a better icon */
     background-position: left center;
     background-repeat: no-repeat;
 }
@@ -549,11 +560,6 @@ LABEL.attach-previous {
   background-color: #f0f0f0;
   padding: 1em;
   margin-bottom: 1em;
-}
-
-.help .from-plugin {
-    text-align: right;
-    color: #666;
 }
 
 .help-area {
@@ -877,7 +883,7 @@ DIV.yahooTree td {
   text-align: left;
   width:25em;
   position: absolute;
-  z-index: 1000;
+  z-index: 999;
 }
 
 #search-box-completion .yui-ac-content {
@@ -994,17 +1000,6 @@ table.progress-bar.red tr.unknown {
 }
 table.progress-bar.red td.progress-bar-done {
   background-color: #cc0000;
-}
-
-/* ========================= notification bar ========================= */
-#notification-bar {
-    width:100%;
-    position:fixed;
-    text-align:center;
-    left:0px;
-    font-size: 2em;
-    z-index:1000;
-    border-bottom: 1px solid black;
 }
 
 /* ========================= YUI dialog ========================= */

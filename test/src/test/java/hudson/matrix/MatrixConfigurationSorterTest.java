@@ -14,7 +14,7 @@ public class MatrixConfigurationSorterTest extends HudsonTestCase {
     public void testConfigRoundtrip() throws Exception {
         MatrixProject p = createMatrixProject();
         configRoundtrip((Item)p);
-        assertEqualDataBoundBeans(new NoopMatrixConfigurationSorter(),p.getSorter());
+        assertNull(p.getSorter());
 
         SorterImpl before = new SorterImpl();
         p.setSorter(before);

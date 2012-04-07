@@ -5,12 +5,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
  * Unit test for {@link Job}.
  */
-public class SimpleJobTest extends TestCase {
+@SuppressWarnings("rawtypes")
+public class SimpleJobTest extends HudsonTestCase {
 
     public void testGetEstimatedDuration() throws IOException {
         
@@ -93,33 +94,10 @@ public class SimpleJobTest extends TestCase {
     }
 
     private Job createMockProject(final SortedMap<Integer, TestBuild> runs) {
-        Job project = new Job(null, "name") {
-
-            int i = 1;
-            
-            @Override
-            public int assignBuildNumber() throws IOException {
-                return i++;
-            }
-            
-            @Override
-            public SortedMap<Integer, ? extends Run> _getRuns() {
-                return runs;
-            }
-
-            @Override
-            public boolean isBuildable() {
-                return true;
-            }
-
-            @Override
-            protected void removeRun(Run run) {
-            }
-            
-        };
-        return project;
+        return new TestJob(runs);
     }
-    
+
+    @SuppressWarnings("unchecked")
     private static class TestBuild extends Run {
         
         public TestBuild(Job project, Result result, long duration, TestBuild previousBuild) throws IOException {
@@ -144,5 +122,40 @@ public class SimpleJobTest extends TestCase {
             return false;
         }
         
+    }
+
+    private class TestJob extends Job implements TopLevelItem {
+
+        int i;
+        private final SortedMap<Integer, TestBuild> runs;
+
+        public TestJob(SortedMap<Integer, TestBuild> runs) {
+            super(SimpleJobTest.this.jenkins, "name");
+            this.runs = runs;
+            i = 1;
+        }
+
+        @Override
+        public int assignBuildNumber() throws IOException {
+            return i++;
+        }
+
+        @Override
+        public SortedMap<Integer, ? extends Run> _getRuns() {
+            return runs;
+        }
+
+        @Override
+        public boolean isBuildable() {
+            return true;
+        }
+
+        @Override
+        protected void removeRun(Run run) {
+        }
+
+        public TopLevelItemDescriptor getDescriptor() {
+            throw new AssertionError();
+        }
     }
 }
